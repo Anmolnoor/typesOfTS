@@ -1,302 +1,140 @@
-##Basic Types
-For programs to be useful, we need to be able to work with some of the simplest units of data: numbers, strings, structures, boolean values, and the like. In TypeScript, we support the same types as you would expect in JavaScript, with an extra enumeration type thrown in to help things along.
-
-Boolean
-The most basic datatype is the simple true/false value, which JavaScript and TypeScript call a boolean value.
-
-let isDone: boolean = false;
-Try
-Number
-As in JavaScript, all numbers in TypeScript are either floating point values or BigIntegers. These floating point numbers get the type number, while BigIntegers get the type bigint. In addition to hexadecimal and decimal literals, TypeScript also supports binary and octal literals introduced in ECMAScript 2015.
-
-let decimal: number = 6;
-let hex: number = 0xf00d;
-let binary: number = 0b1010;
-let octal: number = 0o744;
-let big: bigint = 100n;
-Try
-String
-Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data. As in other languages, we use the type string to refer to these textual datatypes. Just like JavaScript, TypeScript also uses double quotes (") or single quotes (') to surround string data.
-
-let color: string = "blue";
-color = 'red';
-Try
-You can also use template strings, which can span multiple lines and have embedded expressions. These strings are surrounded by the backtick/backquote (`) character, and embedded expressions are of the form ${ expr }.
-
-let fullName: string = `Bob Bobbington`;
-let age: number = 37;
-let sentence: string = `Hello, my name is ${fullName}.
-
-I'll be ${age + 1} years old next month.`;
-Try
-This is equivalent to declaring sentence like so:
-
-let sentence: string =
-  "Hello, my name is " +
-  fullName +
-  ".\n\n" +
-  "I'll be " +
-  (age + 1) +
-  " years old next month.";
-Try
-Array
-TypeScript, like JavaScript, allows you to work with arrays of values. Array types can be written in one of two ways. In the first, you use the type of the elements followed by [] to denote an array of that element type:
-
-let list: number[] = [1, 2, 3];
-Try
-The second way uses a generic array type, Array<elemType>:
-
-let list: Array<number> = [1, 2, 3];
-Try
-Tuple
-Tuple types allow you to express an array with a fixed number of elements whose types are known, but need not be the same. For example, you may want to represent a value as a pair of a string and a number:
-
-// Declare a tuple type
-let x: [string, number];
-// Initialize it
-x = ["hello", 10]; // OK
-// Initialize it incorrectly
-x = [10, "hello"]; // Error
-Type 'number' is not assignable to type 'string'.
-Type 'string' is not assignable to type 'number'.
-Try
-When accessing an element with a known index, the correct type is retrieved:
-
-// OK
-console.log(x[0].substring(1));
-
-console.log(x[1].substring(1));
-Property 'substring' does not exist on type 'number'.
-Try
-Accessing an element outside the set of known indices fails with an error:
-
-x[3] = "world";
-Tuple type '[string, number]' of length '2' has no element at index '3'.
-
-console.log(x[5].toString());
-Object is possibly 'undefined'.
-Tuple type '[string, number]' of length '2' has no element at index '5'.
-Try
-Enum
-A helpful addition to the standard set of datatypes from JavaScript is the enum. As in languages like C#, an enum is a way of giving more friendly names to sets of numeric values.
-
-enum Color {
-  Red,
-  Green,
-  Blue,
-}
-let c: Color = Color.Green;
-Try
-By default, enums begin numbering their members starting at 0. You can change this by manually setting the value of one of its members. For example, we can start the previous example at 1 instead of 0:
-
-enum Color {
-  Red = 1,
-  Green,
-  Blue,
-}
-let c: Color = Color.Green;
-Try
-Or, even manually set all the values in the enum:
-
-enum Color {
-  Red = 1,
-  Green = 2,
-  Blue = 4,
-}
-let c: Color = Color.Green;
-Try
-A handy feature of enums is that you can also go from a numeric value to the name of that value in the enum. For example, if we had the value 2 but weren’t sure what that mapped to in the Color enum above, we could look up the corresponding name:
-
-enum Color {
-  Red = 1,
-  Green,
-  Blue,
-}
-let colorName: string = Color[2];
-
-// Displays 'Green'
-console.log(colorName);
-Try
-Unknown
-We may need to describe the type of variables that we do not know when we are writing an application. These values may come from dynamic content – e.g. from the user – or we may want to intentionally accept all values in our API. In these cases, we want to provide a type that tells the compiler and future readers that this variable could be anything, so we give it the unknown type.
-
-let notSure: unknown = 4;
-notSure = "maybe a string instead";
-
-// OK, definitely a boolean
-notSure = false;
-Try
-If you have a variable with an unknown type, you can narrow it to something more specific by doing typeof checks, comparison checks, or more advanced type guards that will be discussed in a later chapter:
-
-declare const maybe: unknown;
-// 'maybe' could be a string, object, boolean, undefined, or other types
-const aNumber: number = maybe;
-Type 'unknown' is not assignable to type 'number'.
-
-if (maybe === true) {
-  // TypeScript knows that maybe is a boolean now
-  const aBoolean: boolean = maybe;
-  // So, it cannot be a string
-  const aString: string = maybe;
-Type 'boolean' is not assignable to type 'string'.
-}
-
-if (typeof maybe === "string") {
-  // TypeScript knows that maybe is a string
-  const aString: string = maybe;
-  // So, it cannot be a boolean
-  const aBoolean: boolean = maybe;
-Type 'string' is not assignable to type 'boolean'.
-}
-Try
-Any
-In some situations, not all type information is available or its declaration would take an inappropriate amount of effort. These may occur for values from code that has been written without TypeScript or a 3rd party library. In these cases, we might want to opt-out of type checking. To do so, we label these values with the any type:
-
-declare function getValue(key: string): any;
-// OK, return value of 'getValue' is not checked
-const str: string = getValue("myString");
-Try
-The any type is a powerful way to work with existing JavaScript, allowing you to gradually opt-in and opt-out of type checking during compilation.
-
-Unlike unknown, variables of type any allow you to access arbitrary properties, even ones that don’t exist. These properties include functions and TypeScript will not check their existence or type:
-
-let looselyTyped: any = 4;
-// OK, ifItExists might exist at runtime
-looselyTyped.ifItExists();
-// OK, toFixed exists (but the compiler doesn't check)
-looselyTyped.toFixed();
-
-let strictlyTyped: unknown = 4;
-strictlyTyped.toFixed();
-Object is of type 'unknown'.
-Try
-The any will continue to propagate through your objects:
-
-let looselyTyped: any = {};
-let d = looselyTyped.a.b.c.d;
-   
-let d: anyTry
-After all, remember that all the convenience of any comes at the cost of losing type safety. Type safety is one of the main motivations for using TypeScript and you should try to avoid using any when not necessary.
-
-Void
-void is a little like the opposite of any: the absence of having any type at all. You may commonly see this as the return type of functions that do not return a value:
-
-function warnUser(): void {
-  console.log("This is my warning message");
-}
-Try
-Declaring variables of type void is not useful because you can only assign null (only if --strictNullChecks is not specified, see next section) or undefined to them:
-
-let unusable: void = undefined;
-// OK if `--strictNullChecks` is not given
-unusable = null;
-Try
-Null and Undefined
-In TypeScript, both undefined and null actually have their types named undefined and null respectively. Much like void, they’re not extremely useful on their own:
-
-// Not much else we can assign to these variables!
-let u: undefined = undefined;
-let n: null = null;
-Try
-By default null and undefined are subtypes of all other types. That means you can assign null and undefined to something like number.
-
-However, when using the --strictNullChecks flag, null and undefined are only assignable to unknown, any and their respective types (the one exception being that undefined is also assignable to void). This helps avoid many common errors. In cases where you want to pass in either a string or null or undefined, you can use the union type string | null | undefined.
-
-Union types are an advanced topic that we’ll cover in a later chapter.
-
-As a note: we encourage the use of --strictNullChecks when possible, but for the purposes of this handbook, we will assume it is turned off.
-
-Never
-The never type represents the type of values that never occur. For instance, never is the return type for a function expression or an arrow function expression that always throws an exception or one that never returns. Variables also acquire the type never when narrowed by any type guards that can never be true.
-
-The never type is a subtype of, and assignable to, every type; however, no type is a subtype of, or assignable to, never (except never itself). Even any isn’t assignable to never.
-
-Some examples of functions returning never:
-
-// Function returning never must not have a reachable end point
-function error(message: string): never {
-  throw new Error(message);
-}
-
-// Inferred return type is never
-function fail() {
-  return error("Something failed");
-}
-
-// Function returning never must not have a reachable end point
-function infiniteLoop(): never {
-  while (true) {}
-}
-Try
-Object
-object is a type that represents the non-primitive type, i.e. anything that is not number, string, boolean, bigint, symbol, null, or undefined.
-
-With object type, APIs like Object.create can be better represented. For example:
-
-declare function create(o: object | null): void;
-
-// OK
-create({ prop: 0 });
-create(null);
-create(undefined); // with `--strictNullChecks` flag enabled, undefined is not a subtype of null
-Argument of type 'undefined' is not assignable to parameter of type 'object | null'.
-
-create(42);
-Argument of type '42' is not assignable to parameter of type 'object | null'.
-create("string");
-Argument of type '"string"' is not assignable to parameter of type 'object | null'.
-create(false);
-Argument of type 'false' is not assignable to parameter of type 'object | null'.
-Try
-Generally, you won’t need to use this.
-
-Type assertions
-Sometimes you’ll end up in a situation where you’ll know more about a value than TypeScript does. Usually, this will happen when you know the type of some entity could be more specific than its current type.
-
-Type assertions are a way to tell the compiler “trust me, I know what I’m doing.” A type assertion is like a type cast in other languages, but it performs no special checking or restructuring of data. It has no runtime impact and is used purely by the compiler. TypeScript assumes that you, the programmer, have performed any special checks that you need.
-
-Type assertions have two forms.
-
-One is the as-syntax:
-
-let someValue: unknown = "this is a string";
-
-let strLength: number = (someValue as string).length;
-Try
-The other version is the “angle-bracket” syntax:
-
-let someValue: unknown = "this is a string";
-
-let strLength: number = (<string>someValue).length;
-Try
-The two samples are equivalent. Using one over the other is mostly a choice of preference; however, when using TypeScript with JSX, only as-style assertions are allowed.
-
-A note about
-let
-You may have noticed that so far, we’ve been using the let keyword instead of JavaScript’s var keyword which you might be more familiar with. The let keyword is actually a newer JavaScript construct that TypeScript makes available. You can read in the Handbook Reference on Variable Declarations more about how let and const fix a lot of the problems with var.
-
-About
-Number
-,
-String
-,
-Boolean
-,
-Symbol
-and
-Object
-It can be tempting to think that the types Number, String, Boolean, Symbol, or Object are the same as the lowercase versions recommended above. These types do not refer to the language primitives however, and almost never should be used as a type.
-
-function reverse(s: String): String {
-  return s.split("").reverse().join("");
-}
-
-reverse("hello world");
-Try
-Instead, use the types number, string, boolean, object and symbol.
-
-function reverse(s: string): string {
-  return s.split("").reverse().join("");
-}
-
-reverse("hello world");
+<div class="whitespace raised"><div class="markdown"><p>For programs to be useful, we need to be able to work with some of the simplest units of data: numbers, strings, structures, boolean values, and the like.
+In TypeScript, we support the same types as you would expect in JavaScript, with an extra enumeration type thrown in to help things along.</p>
+<h2 id="boolean" style="position:relative;"><a href="#boolean" aria-label="boolean permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Boolean</h2>
+<p>The most basic datatype is the simple true/false value, which JavaScript and TypeScript call a <code>boolean</code> value.</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let isDone: boolean">isDone</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000"> = </span><span style="color: #0000FF">false</span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBAlgzgIgewHYgFwQEYIaAhkiAXggDNdgYQBuIA">Try</a></div></pre>
+<h2 id="number" style="position:relative;"><a href="#number" aria-label="number permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Number</h2>
+<p>As in JavaScript, all numbers in TypeScript are either floating point values or BigIntegers.
+These floating point numbers get the type <code>number</code>, while BigIntegers get the type <code>bigint</code>.
+In addition to hexadecimal and decimal literals, TypeScript also supports binary and octal literals introduced in ECMAScript 2015.</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let decimal: number">decimal</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> = </span><span style="color: #098658">6</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let hex: number">hex</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> = </span><span style="color: #098658">0xf00d</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let binary: number">binary</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> = </span><span style="color: #098658">0b1010</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let octal: number">octal</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> = </span><span style="color: #098658">0o744</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let big: bigint">big</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">bigint</span><span style="color: #000000"> = </span><span style="color: #098658">100</span><span style="color: #0000FF">n</span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEBcEMCcHMCmkBcoCiBlATABjwFAA2yoAJogMYCWAttEWgHYCutARorKALygBsAbmKkAFogAezNp259cEgGa5cZYSUih21JnACe0jl16hc7AIy5L60gHtKMRqFZG5p2wHYALF5ubt8GgBOpp8lrhMgkA">Try</a></div></pre>
+<h2 id="string" style="position:relative;"><a href="#string" aria-label="string permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>String</h2>
+<p>Another fundamental part of creating programs in JavaScript for webpages and servers alike is working with textual data.
+As in other languages, we use the type <code>string</code> to refer to these textual datatypes.
+Just like JavaScript, TypeScript also uses double quotes (<code>"</code>) or single quotes (<code>'</code>) to surround string data.</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let color: string">color</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> = </span><span style="color: #A31515">"blue"</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="let color: string">color</data-lsp></span><span style="color: #000000"> = </span><span style="color: #A31515">'red'</span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBAxg9sMCcBcEDOYEEsB2BzCAvBAEQBGwAriMQNwBQA9AxAA4LhiYgIC0mu2RCDqx4CQhADk7ACaSaQA">Try</a></div></pre>
+<p>You can also use <em>template strings</em>, which can span multiple lines and have embedded expressions.
+These strings are surrounded by the backtick/backquote (<code>`</code>) character, and embedded expressions are of the form <code>${ expr }</code>.</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let fullName: string">fullName</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> = </span><span style="color: #A31515">`Bob Bobbington`</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let age: number">age</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> = </span><span style="color: #098658">37</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let sentence: string">sentence</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> = </span><span style="color: #A31515">`Hello, my name is </span><span style="color: #0000FF">${</span><span style="color: #001080"><data-lsp lsp="let fullName: string">fullName</data-lsp></span><span style="color: #0000FF">}</span><span style="color: #A31515">.</span></div>
+<div class="line"><span style="color: #A31515">I'll be </span><span style="color: #0000FF">${</span><span style="color: #001080"><data-lsp lsp="let age: number">age</data-lsp></span><span style="color: #000000FF"> </span><span style="color: #000000">+</span><span style="color: #000000FF"> </span><span style="color: #098658">1</span><span style="color: #0000FF">}</span><span style="color: #A31515"> years old next month.`</span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBAZgrswDkCGBbEAuCBnMAnAlgHYDmEAvBAAYBCA9gEYR331HFi2GUDcAUKJCTEMEQjBT0QuchADMAdj4DsIQmFUBjETgIkZlABIh4tADQQUAT1GoQEfFggASAN6x4yNAF8AdL14AkgDk8BCSzi5CdgDUEACMXhCWIEi4jrTAACaiIAAekCicYAAWPjxAA">Try</a></div></pre>
+<p>This is equivalent to declaring <code>sentence</code> like so:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let sentence: string">sentence</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> =</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #A31515">"Hello, my name is "</span><span style="color: #000000"> +</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #001080"><data-lsp lsp="let fullName: string">fullName</data-lsp></span><span style="color: #000000"> +</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #A31515">".</span><span style="color: #EE0000">\n\n</span><span style="color: #A31515">"</span><span style="color: #000000"> +</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #A31515">"I'll be "</span><span style="color: #000000"> +</span></div><div class="line"><span style="color: #000000">  (</span><span style="color: #001080"><data-lsp lsp="let age: number">age</data-lsp></span><span style="color: #000000"> + </span><span style="color: #098658">1</span><span style="color: #000000">) +</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #A31515">" years old next month."</span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBAZgrswDkCGBbEAuCBnMAnAlgHYDmEAvBAAYBCA9gEYR331HFi2GUDcAUKJCTEMEQjBT0QuchADMAdj4B6JRAC0GgMYwwGtf3DYQhMMc0icBEuV4QIAIgASIeLQA0EFAE9RqEBHwsBwgAaltoOEQ-UPD7ADoAHUIk+xi7ewBJAHJ4CElgsLsACiF-EIgARgBKNOCvECRcINpgABNREAAPSBROMAALOPtuIA">Try</a></div></pre>
+<h2 id="array" style="position:relative;"><a href="#array" aria-label="array permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Array</h2>
+<p>TypeScript, like JavaScript, allows you to work with arrays of values.
+Array types can be written in one of two ways.
+In the first, you use the type of the elements followed by <code>[]</code> to denote an array of that element type:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let list: number[]">list</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000">[] = [</span><span style="color: #098658">1</span><span style="color: #000000">, </span><span style="color: #098658">2</span><span style="color: #000000">, </span><span style="color: #098658">3</span><span style="color: #000000">];</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBMCWDOYC4IDsCuBbARiATgbQF0IBeCPARgBoIAmagZgIG4g">Try</a></div></pre>
+<p>The second way uses a generic array type, <code>Array&lt;elemType&gt;</code>:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let list: number[]">list</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99"><data-lsp lsp="interface Array&amp;lt;T>">Array</data-lsp></span><span style="color: #000000">&lt;</span><span style="color: #267F99">number</span><span style="color: #000000">&gt; = [</span><span style="color: #098658">1</span><span style="color: #000000">, </span><span style="color: #098658">2</span><span style="color: #000000">, </span><span style="color: #098658">3</span><span style="color: #000000">];</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBMCWDOYC4IEEBOqCGBPAPAOwFcBbAIxFQD4IBeCAbQEYAaCAJhYGYBdAbiA">Try</a></div></pre>
+<h2 id="tuple" style="position:relative;"><a href="#tuple" aria-label="tuple permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Tuple</h2>
+<p>Tuple types allow you to express an array with a fixed number of elements whose types are known, but need not be the same. For example, you may want to represent a value as a pair of a <code>string</code> and a <code>number</code>:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #008000">// Declare a tuple type</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let x: [string, number]">x</data-lsp></span><span style="color: #000000">: [</span><span style="color: #267F99">string</span><span style="color: #000000">, </span><span style="color: #267F99">number</span><span style="color: #000000">];</span></div><div class="line"><span style="color: #008000">// Initialize it</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="let x: [string, number]">x</data-lsp></span><span style="color: #000000"> = [</span><span style="color: #A31515">"hello"</span><span style="color: #000000">, </span><span style="color: #098658">10</span><span style="color: #000000">]; </span><span style="color: #008000">// OK</span></div><div class="line"><span style="color: #008000">// Initialize it incorrectly</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="let x: [string, number]">x</data-lsp></span><span style="color: #000000"> = [</span><span style="color: #098658"><data-err>10</data-err></span><span style="color: #000000">, </span><span style="color: #A31515"><data-err>"hello"</data-err></span><span style="color: #000000">]; </span><span style="color: #008000">// Error</span></div><span class="error"><span>Type 'number' is not assignable to type 'string'.<br>Type 'string' is not assignable to type 'number'.</span><span class="code">2322<br>2322</span></span><span class="error-behind">Type 'number' is not assignable to type 'string'.<br>Type 'string' is not assignable to type 'number'.</span></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEFMCdoe2gZwFygEwGY1oFAlACKQDGANgIbSSjmgAuArgA6nV0CeTkOrdoAHqgDaiOtACWAOwDmAGlCSGAWwBGMALoBuPGACSk8XXHlS4gF7VDOfqAC8oIQCIAFpFKk4j+QEYADFtB8AHkAaR1QfUNjUwtQQzjJYgQqYjpSdms7Bz95FzcPRwD8AFFYBCA">Try</a></div></pre>
+<p>When accessing an element with a known index, the correct type is retrieved:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #008000">// OK</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="var console: Console">console</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="(method) Console.log(...data: any[]): void">log</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="let x: [string, number]">x</data-lsp></span><span style="color: #000000">[</span><span style="color: #098658">0</span><span style="color: #000000">].</span><span style="color: #795E26"><data-lsp lsp="(method) String.substring(start: number, end?: number | undefined): string">substring</data-lsp></span><span style="color: #000000">(</span><span style="color: #098658">1</span><span style="color: #000000">));</span></div>
+<div class="line"><span style="color: #001080"><data-lsp lsp="var console: Console">console</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="(method) Console.log(...data: any[]): void">log</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="let x: [string, number]">x</data-lsp></span><span style="color: #000000">[</span><span style="color: #098658">1</span><span style="color: #000000">].</span><span style="color: #795E26"><data-err><data-lsp lsp="any">substring</data-lsp></data-err></span><span style="color: #000000">(</span><span style="color: #098658">1</span><span style="color: #000000">));</span></div><span class="error"><span>Property 'substring' does not exist on type 'number'.</span><span class="code">2339</span></span><span class="error-behind">Property 'substring' does not exist on type 'number'.</span></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEFMCdoe2gZwFygEwGYME4BQAbSAF1AA9UBtRI6ASwDsBzAGlHoFcBbAIxgF0A3LlKgAvKAoAiABaR8+OJNYBGAAyDQIUAHkA0rhBgAtCYDG7IiaMGwe3Kbj1EcQgDoFjABSkK614nZuajomT2UASnChe0dnNw9vCmU+f0Dghi8IqKA">Try</a></div></pre>
+<p>Accessing an element outside the set of known indices fails with an error:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #001080"><data-lsp lsp="let x: [string, number]">x</data-lsp></span><span style="color: #000000">[</span><span style="color: #098658"><data-err>3</data-err></span><span style="color: #000000">] = </span><span style="color: #A31515">"world"</span><span style="color: #000000">;</span></div><span class="error"><span>Tuple type '[string, number]' of length '2' has no element at index '3'.</span><span class="code">2493</span></span><span class="error-behind">Tuple type '[string, number]' of length '2' has no element at index '3'.</span>
+<div class="line"><span style="color: #001080"><data-lsp lsp="var console: Console">console</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="(method) Console.log(...data: any[]): void">log</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="let x: [string, number]">x</data-lsp></span><span style="color: #000000">[</span><span style="color: #098658"><data-err>5</data-err></span><span style="color: #000000">].</span><span style="color: #795E26"><data-lsp lsp="any">toString</data-lsp></span><span style="color: #000000">());</span></div><span class="error"><span>Object is possibly 'undefined'.<br>Tuple type '[string, number]' of length '2' has no element at index '5'.</span><span class="code">2532<br>2493</span></span><span class="error-behind">Object is possibly 'undefined'.<br>Tuple type '[string, number]' of length '2' has no element at index '5'.</span></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEFMCdoe2gZwFygEwBYCcBmdBWHNdItAKABtIAXUAD1QG1FroBLAOwHMAaUDgK4BbAEYwAugG4ydUAF5QjAEQALSBQpwlfAIwAGKaBCgA8gGkyIMAFpbAYwHVb1mYxzj5oJQHcEFACZK0mR2cByIcFQAdJpcABR0jPjiUdRwAMqsnPEAlDmSQA">Try</a></div></pre>
+<h2 id="enum" style="position:relative;"><a href="#enum" aria-label="enum permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Enum</h2>
+<p>A helpful addition to the standard set of datatypes from JavaScript is the <code>enum</code>.
+As in languages like C#, an enum is a way of giving more friendly names to sets of numeric values.</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">enum</span><span style="color: #000000"> </span><span style="color: #267F99"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Red = 0">Red</data-lsp></span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Green = 1">Green</data-lsp></span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Blue = 2">Blue</data-lsp></span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">}</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let c: Color">c</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000">.</span><span style="color: #001080"><data-lsp lsp="(enum member) Color.Green = 1">Green</data-lsp></span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/KYOwrgtgBAwg9gGzgJygbwFBSgJWAEwBosoBxZYUY7AIQTGGIF8MFgAXKAYwC5ZEUUALz8kyAHTlKIANxA">Try</a></div></pre>
+<p>By default, enums begin numbering their members starting at <code>0</code>.
+You can change this by manually setting the value of one of its members.
+For example, we can start the previous example at <code>1</code> instead of <code>0</code>:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">enum</span><span style="color: #000000"> </span><span style="color: #267F99"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Red = 1">Red</data-lsp></span><span style="color: #000000"> = </span><span style="color: #098658">1</span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Green = 2">Green</data-lsp></span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Blue = 3">Blue</data-lsp></span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">}</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let c: Color">c</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000">.</span><span style="color: #001080"><data-lsp lsp="(enum member) Color.Green = 2">Green</data-lsp></span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/KYOwrgtgBAwg9gGzgJygbwFBSgJWAEygF4oBGAGiygHFlhRLsAhBMYSgXwwWABcoAxgC5YiFMVFJkAOlr0QAbiA">Try</a></div></pre>
+<p>Or, even manually set all the values in the enum:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">enum</span><span style="color: #000000"> </span><span style="color: #267F99"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Red = 1">Red</data-lsp></span><span style="color: #000000"> = </span><span style="color: #098658">1</span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Green = 2">Green</data-lsp></span><span style="color: #000000"> = </span><span style="color: #098658">2</span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Blue = 4">Blue</data-lsp></span><span style="color: #000000"> = </span><span style="color: #098658">4</span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">}</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let c: Color">c</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000">.</span><span style="color: #001080"><data-lsp lsp="(enum member) Color.Green = 2">Green</data-lsp></span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/KYOwrgtgBAwg9gGzgJygbwFBSgJWAEygF4oBGAGiygHFlhRioAmS7AIQTGEYBZKBfDAmAAXKAGMAXLEQpG8JMgB0teiADcQA">Try</a></div></pre>
+<p>A handy feature of enums is that you can also go from a numeric value to the name of that value in the enum.
+For example, if we had the value <code>2</code> but weren’t sure what that mapped to in the <code>Color</code> enum above, we could look up the corresponding name:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">enum</span><span style="color: #000000"> </span><span style="color: #267F99"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Red = 1">Red</data-lsp></span><span style="color: #000000"> = </span><span style="color: #098658">1</span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Green = 2">Green</data-lsp></span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0070C1"><data-lsp lsp="(enum member) Color.Blue = 3">Blue</data-lsp></span><span style="color: #000000">,</span></div><div class="line"><span style="color: #000000">}</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let colorName: string">colorName</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="enum Color">Color</data-lsp></span><span style="color: #000000">[</span><span style="color: #098658">2</span><span style="color: #000000">];</span></div>
+<div class="line"><span style="color: #008000">// Displays 'Green'</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="var console: Console">console</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="(method) Console.log(...data: any[]): void">log</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="let colorName: string">colorName</data-lsp></span><span style="color: #000000">);</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/KYOwrgtgBAwg9gGzgJygbwFBSgJWAEygF4oBGAGiygHFlhRLsAhBMYSgXwwWABcoAxohQA5AIYRgALigBnXsgCWIAObFYw5AG0ATAF0A3BgwB6E1AAii2QAcEYgJ6yoAclr0QLjEJCzEwADokFQAKISRkcUkASgMgA">Try</a></div></pre>
+<h2 id="unknown" style="position:relative;"><a href="#unknown" aria-label="unknown permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Unknown</h2>
+<p>We may need to describe the type of variables that we do not know when we are writing an application.
+These values may come from dynamic content – e.g. from the user – or we may want to intentionally accept all values in our API.
+In these cases, we want to provide a type that tells the compiler and future readers that this variable could be anything, so we give it the <code>unknown</code> type.</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let notSure: unknown">notSure</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">unknown</span><span style="color: #000000"> = </span><span style="color: #098658">4</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="let notSure: unknown">notSure</data-lsp></span><span style="color: #000000"> = </span><span style="color: #A31515">"maybe a string instead"</span><span style="color: #000000">;</span></div>
+<div class="line"><span style="color: #008000">// OK, definitely a boolean</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="let notSure: unknown">notSure</data-lsp></span><span style="color: #000000"> = </span><span style="color: #0000FF">false</span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBAdg9mDKBXATiAXBRUDWsDuUEAvBACwDcAULAiiMRAEQC2AhgJ4BG9rEAzmGQBLKAHMIIgSFYATRlUoB6RRADyAaQA0EGSABmIoWBDB2EXpxgxQrKNThJUDPa2B8Q5IA">Try</a></div></pre>
+<p>If you have a variable with an unknown type, you can narrow it to something more specific by doing <code>typeof</code> checks, comparison checks, or more advanced type guards that will be discussed in a later chapter:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">declare</span><span style="color: #000000"> </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1"><data-lsp lsp="const maybe: unknown">maybe</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">unknown</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #008000">// 'maybe' could be a string, object, boolean, undefined, or other types</span></div><div class="line"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1"><data-err><data-lsp lsp="const aNumber: number">aNumber</data-lsp></data-err></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="const maybe: unknown">maybe</data-lsp></span><span style="color: #000000">;</span></div><span class="error"><span>Type 'unknown' is not assignable to type 'number'.</span><span class="code">2322</span></span><span class="error-behind">Type 'unknown' is not assignable to type 'number'.</span>
+<div class="line"><span style="color: #AF00DB">if</span><span style="color: #000000"> (</span><span style="color: #001080"><data-lsp lsp="const maybe: unknown">maybe</data-lsp></span><span style="color: #000000"> === </span><span style="color: #0000FF">true</span><span style="color: #000000">) {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #008000">// TypeScript knows that maybe is a boolean now</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1"><data-lsp lsp="const aBoolean: boolean">aBoolean</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="const maybe: true">maybe</data-lsp></span><span style="color: #000000">;</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #008000">// So, it cannot be a string</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1"><data-err><data-lsp lsp="const aString: string">aString</data-lsp></data-err></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="const maybe: true">maybe</data-lsp></span><span style="color: #000000">;</span></div><span class="error"><span>Type 'boolean' is not assignable to type 'string'.</span><span class="code">2322</span></span><span class="error-behind">Type 'boolean' is not assignable to type 'string'.</span><div class="line"><span style="color: #000000">}</span></div>
+<div class="line"><span style="color: #AF00DB">if</span><span style="color: #000000"> (</span><span style="color: #0000FF">typeof</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="const maybe: unknown">maybe</data-lsp></span><span style="color: #000000"> === </span><span style="color: #A31515">"string"</span><span style="color: #000000">) {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #008000">// TypeScript knows that maybe is a string</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1"><data-lsp lsp="const aString: string">aString</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="const maybe: string">maybe</data-lsp></span><span style="color: #000000">;</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #008000">// So, it cannot be a boolean</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1"><data-err><data-lsp lsp="const aBoolean: boolean">aBoolean</data-lsp></data-err></span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="const maybe: string">maybe</data-lsp></span><span style="color: #000000">;</span></div><span class="error"><span>Type 'string' is not assignable to type 'boolean'.</span><span class="code">2322</span></span><span class="error-behind">Type 'string' is not assignable to type 'boolean'.</span><div class="line"><span style="color: #000000">}</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEFMCdoe2gZwFygEwGY1vVnnsAoAE0gGMAbAQ2klDLgDtEAXUAWyoE8AjSVAK6MA1ozgB3RgG5CIUAHJOvSPPpwBFYqD6gqoVtACWjAOYAaUHB4Arciws84cCpCqMLQ0gDNjkYhYRLFgALGFAWLgAHSERCBmY2KgA5AXY+aFRGVPTQAF4Obj4ZQkMvUAAKJR1cmvDoAUgASlAAb0JQUDkAFSjIAGUyI0i2UQlEcOCqNiq6Q3G9R2dXRlAxcXa1BN0AIScXN1RF-ZX8mZkOuT64C0M2MjcxNh09A2MTDfjWXT6WI1NUV6mPIFZQyAC+hBKZXKEWicDKMzytQARICTMjmm0LmAetEBkMRmtxiEpiCdHNdPpfm8PkwvlQfn8TADqUDToVIOdOmArjc7g84E86As9staVsqLslgdtKK3MCzoQwUA">Try</a></div></pre>
+<h2 id="any" style="position:relative;"><a href="#any" aria-label="any permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Any</h2>
+<p>In some situations, not all type information is available or its declaration would take an inappropriate amount of effort.
+These may occur for values from code that has been written without TypeScript or a 3rd party library.
+In these cases, we might want to opt-out of type checking.
+To do so, we label these values with the <code>any</code> type:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">declare</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function getValue(key: string): any">getValue</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="(parameter) key: string">key</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">): </span><span style="color: #267F99">any</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #008000">// OK, return value of 'getValue' is not checked</span></div><div class="line"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1"><data-lsp lsp="const str: string">str</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> = </span><span style="color: #795E26"><data-lsp lsp="function getValue(key: string): any">getValue</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">"myString"</span><span style="color: #000000">);</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/CYUwxgNghgTiAEAzArgOzAFwJYHtXwHMQMA1KCZEACgGsQBPALngGcMYtUCBKZqVegG4AUAHpR8APIBpADTw4GZDHwA3cpXg5E8AORFSGkLvhYW8VDgzwwAC3B1gwsHjat2zNhy7wAvIWIyCmoAIgBbegBldk4CEO5BIA">Try</a></div></pre>
+<p>The <code>any</code> type is a powerful way to work with existing JavaScript, allowing you to gradually opt-in and opt-out of type checking during compilation.</p>
+<p>Unlike <code>unknown</code>, variables of type <code>any</code> allow you to access arbitrary properties, even ones that don’t exist.
+These properties include functions and TypeScript will not check their existence or type:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let looselyTyped: any">looselyTyped</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">any</span><span style="color: #000000"> = </span><span style="color: #098658">4</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #008000">// OK, ifItExists might exist at runtime</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="let looselyTyped: any">looselyTyped</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="any">ifItExists</data-lsp></span><span style="color: #000000">();</span></div><div class="line"><span style="color: #008000">// OK, toFixed exists (but the compiler doesn't check)</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="let looselyTyped: any">looselyTyped</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="any">toFixed</data-lsp></span><span style="color: #000000">();</span></div>
+<div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let strictlyTyped: unknown">strictlyTyped</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">unknown</span><span style="color: #000000"> = </span><span style="color: #098658">4</span><span style="color: #000000">;</span></div><div class="line"><span style="color: #001080"><data-err><data-lsp lsp="let strictlyTyped: unknown">strictlyTyped</data-lsp></data-err></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="any">toFixed</data-lsp></span><span style="color: #000000">();</span></div><span class="error"><span>Object is of type 'unknown'.</span><span class="code">2571</span></span><span class="error-behind">Object is of type 'unknown'.</span></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEFMCdoe2gZwFygEwFYDsBGAUADaQAuoBccikBAngCo0AOkAJqgIYB2NoAvKABYA3HhCgA8gGkANKACWAMwCSxAKIAPOYmKJQAWzkBzABalIm7aHaloAV07E5eyIQpVaDZiwB0ilRq0dAAoAShExKVliOAAxOXVWUHNA3SCAI1tSYmNIUABjOD1GOSJoUBY4SEROAHJSPJy8gGsQ10pqeiZWb2i4hJZQkUISUG1oOTziDy62UHsmzjgAd04+QRExianOrx7Y+NZBoA">Try</a></div></pre>
+<p>The <code>any</code> will continue to propagate through your objects:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let looselyTyped: any">looselyTyped</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">any</span><span style="color: #000000"> = {};</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let d: any" style="border-bottom: solid 2px lightgrey;">d</data-lsp></span><span style="color: #000000"> = </span><span style="color: #001080"><data-lsp lsp="let looselyTyped: any">looselyTyped</data-lsp></span><span style="color: #000000">.</span><span style="color: #001080"><data-lsp lsp="any">a</data-lsp></span><span style="color: #000000">.</span><span style="color: #001080"><data-lsp lsp="any">b</data-lsp></span><span style="color: #000000">.</span><span style="color: #001080"><data-lsp lsp="any">c</data-lsp></span><span style="color: #000000">.</span><span style="color: #001080"><data-lsp lsp="any">d</data-lsp></span><span style="color: #000000">;</span></div><span class="popover-prefix">   </span><span class="popover"><div class="arrow"></div>let d: any</span></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBMD20M4mATwCpIA4gCYC4IEMA7JCAXggG8BfAbgChRIsypYFk1MsA6fbgI24BjblnoB6cRAgA9APxA">Try</a></div></pre>
+<p>After all, remember that all the convenience of <code>any</code> comes at the cost of losing type safety.
+Type safety is one of the main motivations for using TypeScript and you should try to avoid using <code>any</code> when not necessary.</p>
+<h2 id="void" style="position:relative;"><a href="#void" aria-label="void permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Void</h2>
+<p><code>void</code> is a little like the opposite of <code>any</code>: the absence of having any type at all.
+You may commonly see this as the return type of functions that do not return a value:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function warnUser(): void">warnUser</data-lsp></span><span style="color: #000000">(): </span><span style="color: #267F99">void</span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #001080"><data-lsp lsp="var console: Console">console</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="(method) Console.log(...data: any[]): void">log</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">"This is my warning message"</span><span style="color: #000000">);</span></div><div class="line"><span style="color: #000000">}</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/GYVwdgxgLglg9mABAdwIYCcwFUDOBTdACgEoAuRANzhgBNEBvAKEUQgRzgBs8A6TuAOaEARABUAFjByIpiALYBPFBjAwwA+Xhw5UAvMOIBuRgF8gA">Try</a></div></pre>
+<p>Declaring variables of type <code>void</code> is not useful because you can only assign <code>null</code> (only if <code>--strictNullChecks</code> is not specified, see next section) or <code>undefined</code> to them:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let unusable: void">unusable</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">void</span><span style="color: #000000"> = </span><span style="color: #0000FF"><data-lsp lsp="var undefined">undefined</data-lsp></span><span style="color: #000000">;</span></div><div class="line"><span style="color: #008000">// OK if `--strictNullChecks` is not given</span></div><div class="line"><span style="color: #001080"><data-lsp lsp="let unusable: void">unusable</data-lsp></span><span style="color: #000000"> = </span><span style="color: #0000FF">null</span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEGcBcCcEsDG0BcoBmBDANpApgFDZ7SgCuAdmZJgEbFoBuA9vACagC85Fbe68CnjYBuAiFAB5ANKh46UAAMAtMpgJkAOTLZsAYQAWeRAGtIiuZFAVmpAObxGeCgUrU6xLtZ3YRQA">Try</a></div></pre>
+<h2 id="null-and-undefined" style="position:relative;"><a href="#null-and-undefined" aria-label="null and undefined permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Null and Undefined</h2>
+<p>In TypeScript, both <code>undefined</code> and <code>null</code> actually have their types named <code>undefined</code> and <code>null</code> respectively.
+Much like <code>void</code>, they’re not extremely useful on their own:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #008000">// Not much else we can assign to these variables!</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let u: undefined">u</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">undefined</span><span style="color: #000000"> = </span><span style="color: #0000FF"><data-lsp lsp="var undefined">undefined</data-lsp></span><span style="color: #000000">;</span></div><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let n: null">n</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">null</span><span style="color: #000000"> = </span><span style="color: #0000FF">null</span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEDkHsBdQWwK4GMAWoCmAbAzu0B3PJAQwDtRjtsBLAc3OklGhXV1ADdiAna4gI0xsAhACghsBAC5QCUgBN0AM2ql080AF5ZC5avUBucelikZpBJkxbQFqwaA">Try</a></div></pre>
+<p>By default <code>null</code> and <code>undefined</code> are subtypes of all other types.
+That means you can assign <code>null</code> and <code>undefined</code> to something like <code>number</code>.</p>
+<p>However, when using the <code>--strictNullChecks</code> flag, <code>null</code> and <code>undefined</code> are only assignable to <code>unknown</code>, <code>any</code> and their respective types (the one exception being that <code>undefined</code> is also assignable to <code>void</code>).
+This helps avoid <em>many</em> common errors.
+In cases where you want to pass in either a <code>string</code> or <code>null</code> or <code>undefined</code>, you can use the union type <code>string | null | undefined</code>.</p>
+<p>Union types are an advanced topic that we’ll cover in a later chapter.</p>
+<blockquote>
+<p>As a note: we encourage the use of <code>--strictNullChecks</code> when possible, but for the purposes of this handbook, we will assume it is turned off.</p>
+</blockquote>
+<h2 id="never" style="position:relative;"><a href="#never" aria-label="never permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Never</h2>
+<p>The <code>never</code> type represents the type of values that never occur.
+For instance, <code>never</code> is the return type for a function expression or an arrow function expression that always throws an exception or one that never returns.
+Variables also acquire the type <code>never</code> when narrowed by any type guards that can never be true.</p>
+<p>The <code>never</code> type is a subtype of, and assignable to, every type; however, <em>no</em> type is a subtype of, or assignable to, <code>never</code> (except <code>never</code> itself).
+Even <code>any</code> isn’t assignable to <code>never</code>.</p>
+<p>Some examples of functions returning <code>never</code>:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #008000">// Function returning never must not have a reachable end point</span></div><div class="line"><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function error(message: string): never">error</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="(parameter) message: string">message</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">): </span><span style="color: #267F99">never</span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #AF00DB">throw</span><span style="color: #000000"> </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #267F99"><data-lsp lsp="var Error: ErrorConstructor&amp;#13;new (message?: string | undefined) => Error">Error</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="(parameter) message: string">message</data-lsp></span><span style="color: #000000">);</span></div><div class="line"><span style="color: #000000">}</span></div>
+<div class="line"><span style="color: #008000">// Inferred return type is never</span></div><div class="line"><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function fail(): never">fail</data-lsp></span><span style="color: #000000">() {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function error(message: string): never">error</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">"Something failed"</span><span style="color: #000000">);</span></div><div class="line"><span style="color: #000000">}</span></div>
+<div class="line"><span style="color: #008000">// Function returning never must not have a reachable end point</span></div><div class="line"><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function infiniteLoop(): never">infiniteLoop</data-lsp></span><span style="color: #000000">(): </span><span style="color: #267F99">never</span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #AF00DB">while</span><span style="color: #000000"> (</span><span style="color: #0000FF">true</span><span style="color: #000000">) {}</span></div><div class="line"><span style="color: #000000">}</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEDEFcDsGMBcCWB7aoBOBTel3UdAOajSYBum6oAtpAM7wnKMAWAhhaGxpm7OwCMANplCZoAE1AAHZAXgAoAGYwEKNJXTJ0ACmqY6dNoUwAuUA3QFCASnOkKVAN4LQoeCy0B3Eph8BRdC1dfUNjTBsAbgUAXwUFEFAASWglTUwpLBw8dwBPaVFEOl9HZVUkVFAlNkQhHRtQFzcs3A0g7R0AIgBlZH0PayqakQlOqNj4xKg4CrQWvEGHShp6RmhmUHZObiw+QRExSRk5aEUVGfVQAiUCRHhMABlkZGl6+3JlptAvFlrRHXg6EgEUacRiQA">Try</a></div></pre>
+<h2 id="object" style="position:relative;"><a href="#object" aria-label="object permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Object</h2>
+<p><code>object</code> is a type that represents the non-primitive type, i.e. anything that is not <code>number</code>, <code>string</code>, <code>boolean</code>, <code>bigint</code>, <code>symbol</code>, <code>null</code>, or <code>undefined</code>.</p>
+<p>With <code>object</code> type, APIs like <code>Object.create</code> can be better represented. For example:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">declare</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function create(o: object | null): void">create</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="(parameter) o: object | null">o</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">object</span><span style="color: #000000"> | </span><span style="color: #267F99">null</span><span style="color: #000000">): </span><span style="color: #267F99">void</span><span style="color: #000000">;</span></div>
+<div class="line"><span style="color: #008000">// OK</span></div><div class="line"><span style="color: #795E26"><data-lsp lsp="function create(o: object | null): void">create</data-lsp></span><span style="color: #000000">({ </span><span style="color: #001080"><data-lsp lsp="(property) prop: number">prop</data-lsp>:</span><span style="color: #000000"> </span><span style="color: #098658">0</span><span style="color: #000000"> });</span></div><div class="line"><span style="color: #795E26"><data-lsp lsp="function create(o: object | null): void">create</data-lsp></span><span style="color: #000000">(</span><span style="color: #0000FF">null</span><span style="color: #000000">);</span></div><div class="line"><span style="color: #795E26"><data-lsp lsp="function create(o: object | null): void">create</data-lsp></span><span style="color: #000000">(</span><span style="color: #0000FF"><data-err><data-lsp lsp="var undefined">undefined</data-lsp></data-err></span><span style="color: #000000">); </span><span style="color: #008000">// with `--strictNullChecks` flag enabled, undefined is not a subtype of null</span></div><span class="error"><span>Argument of type 'undefined' is not assignable to parameter of type 'object | null'.</span><span class="code">2345</span></span><span class="error-behind">Argument of type 'undefined' is not assignable to parameter of type 'object | null'.</span>
+<div class="line"><span style="color: #795E26"><data-lsp lsp="function create(o: object | null): void">create</data-lsp></span><span style="color: #000000">(</span><span style="color: #098658"><data-err>42</data-err></span><span style="color: #000000">);</span></div><span class="error"><span>Argument of type '42' is not assignable to parameter of type 'object | null'.</span><span class="code">2345</span></span><span class="error-behind">Argument of type '42' is not assignable to parameter of type 'object | null'.</span><div class="line"><span style="color: #795E26"><data-lsp lsp="function create(o: object | null): void">create</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515"><data-err>"string"</data-err></span><span style="color: #000000">);</span></div><span class="error"><span>Argument of type '"string"' is not assignable to parameter of type 'object | null'.</span><span class="code">2345</span></span><span class="error-behind">Argument of type '"string"' is not assignable to parameter of type 'object | null'.</span><div class="line"><span style="color: #795E26"><data-lsp lsp="function create(o: object | null): void">create</data-lsp></span><span style="color: #000000">(</span><span style="color: #0000FF"><data-err>false</data-err></span><span style="color: #000000">);</span></div><span class="error"><span>Argument of type 'false' is not assignable to parameter of type 'object | null'.</span><span class="code">2345</span></span><span class="error-behind">Argument of type 'false' is not assignable to parameter of type 'object | null'.</span></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEFMCdoe2gZwFygEwGYAsBWAUACaQDGANgIbSSgBmArgHbEAuAlnA6MVec5ABRxUcAEYArEs1AAfUAzqlSASlQA3OKwIBuPHhCgA8gGk83SLwEBvUAAd4N1AAZQAXyU6zF-vMXvTPPn5GIhpWBkgCd1B9AHdWZgALUAADAFpUxGZoVhYAOQVSAGEEkgBrRGTaCgBzUEgGchFSCIAaUGDIUPCCUFZEOTgpclBEOhFmAE8bajgaOQLdT0CsND8lgQAiTOyGao21gIEaclJESHcgA">Try</a></div></pre>
+<p>Generally, you won’t need to use this.</p>
+<h2 id="type-assertions" style="position:relative;"><a href="#type-assertions" aria-label="type assertions permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Type assertions</h2>
+<p>Sometimes you’ll end up in a situation where you’ll know more about a value than TypeScript does.
+Usually, this will happen when you know the type of some entity could be more specific than its current type.</p>
+<p><em>Type assertions</em> are a way to tell the compiler “trust me, I know what I’m doing.”
+A type assertion is like a type cast in other languages, but it performs no special checking or restructuring of data.
+It has no runtime impact and is used purely by the compiler.
+TypeScript assumes that you, the programmer, have performed any special checks that you need.</p>
+<p>Type assertions have two forms.</p>
+<p>One is the <code>as</code>-syntax:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let someValue: unknown">someValue</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">unknown</span><span style="color: #000000"> = </span><span style="color: #A31515">"this is a string"</span><span style="color: #000000">;</span></div>
+<div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let strLength: number">strLength</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> = (</span><span style="color: #001080"><data-lsp lsp="let someValue: unknown">someValue</data-lsp></span><span style="color: #000000"> </span><span style="color: #AF00DB">as</span><span style="color: #000000"> </span><span style="color: #267F99">string</span><span style="color: #000000">).</span><span style="color: #001080"><data-lsp lsp="(property) String.length: number">length</data-lsp></span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBAzg9gtiAagQ2AVxALgmgdga1xgHdcIBeCAIjAAsBLKCRiZaMAJ3twHMqBuAFCDQkKJwAyIXnWy40cAEYgOFCAApYCFOhCsm4rrwCUAOlAza-IA">Try</a></div></pre>
+<p>The other version is the “angle-bracket” syntax:</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let someValue: unknown">someValue</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">unknown</span><span style="color: #000000"> = </span><span style="color: #A31515">"this is a string"</span><span style="color: #000000">;</span></div>
+<div class="line"><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="let strLength: number">strLength</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> = (&lt;</span><span style="color: #267F99">string</span><span style="color: #000000">&gt;</span><span style="color: #001080"><data-lsp lsp="let someValue: unknown">someValue</data-lsp></span><span style="color: #000000">).</span><span style="color: #001080"><data-lsp lsp="(property) String.length: number">length</data-lsp></span><span style="color: #000000">;</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/DYUwLgBAzg9gtiAagQ2AVxALgmgdga1xgHdcIBeCAIjAAsBLKCRiZaMAJ3twHMqBuAFCDQkKJwAyIXnWy40cAEYgOFCAAoAPOK68AfLAQp0IAJQA6UDNr8gA">Try</a></div></pre>
+<p>The two samples are equivalent.
+Using one over the other is mostly a choice of preference; however, when using TypeScript with JSX, only <code>as</code>-style assertions are allowed.</p>
+<h2 id="a-note-about-let" style="position:relative;"><a href="#a-note-about-let" aria-label="a note about let permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>A note about <code>let</code></h2>
+<p>You may have noticed that so far, we’ve been using the <code>let</code> keyword instead of JavaScript’s <code>var</code> keyword which you might be more familiar with.
+The <code>let</code> keyword is actually a newer JavaScript construct that TypeScript makes available.
+You can read in the Handbook Reference on <a href="/docs/handbook/variable-declarations.html">Variable Declarations</a> more about how <code>let</code> and <code>const</code> fix a lot of the problems with <code>var</code>.</p>
+<h2 id="about-number-string-boolean-symbol-and-object" style="position:relative;"><a href="#about-number-string-boolean-symbol-and-object" aria-label="about number string boolean symbol and object permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>About <code>Number</code>, <code>String</code>, <code>Boolean</code>, <code>Symbol</code> and <code>Object</code></h2>
+<p>It can be tempting to think that the types <code>Number</code>, <code>String</code>, <code>Boolean</code>, <code>Symbol</code>, or <code>Object</code> are the same as the lowercase versions recommended above.
+These types do not refer to the language primitives however, and almost never should be used as a type.</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function reverse(s: String): String">reverse</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="(parameter) s: String">s</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99"><data-lsp lsp="interface String">String</data-lsp></span><span style="color: #000000">): </span><span style="color: #267F99"><data-lsp lsp="interface String">String</data-lsp></span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="(parameter) s: String">s</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="(method) String.split(separator: string | RegExp, limit?: number | undefined): string[] (+1 overload)">split</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">""</span><span style="color: #000000">).</span><span style="color: #795E26"><data-lsp lsp="(method) Array&amp;lt;string>.reverse(): string[]">reverse</data-lsp></span><span style="color: #000000">().</span><span style="color: #795E26"><data-lsp lsp="(method) Array&amp;lt;string>.join(separator?: string | undefined): string">join</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">""</span><span style="color: #000000">);</span></div><div class="line"><span style="color: #000000">}</span></div>
+<div class="line"><span style="color: #795E26"><data-lsp lsp="function reverse(s: String): String">reverse</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">"hello world"</span><span style="color: #000000">);</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/PTAEAEFMCdoe2gZwFygEwGYME4BQAzAVwDsBjAFwEs5jRpIA3GRSAChVAGVzpLiBzAJSpuvAaADeuUHUjlC0WogB0iAA4AbSuVYAiXYOX0mSNoYBWcPnoMBuXAF9cuY8za6AFpA0a4oAO4IGgAmdkA">Try</a></div></pre>
+<p>Instead, use the types <code>number</code>, <code>string</code>, <code>boolean</code>, <code>object</code> and <code>symbol</code>.</p>
+<pre class="shiki   twoslash lsp" style="background-color: #FFFFFF; color: #000000"><div class="code-container"><code><div class="line"><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26"><data-lsp lsp="function reverse(s: string): string">reverse</data-lsp></span><span style="color: #000000">(</span><span style="color: #001080"><data-lsp lsp="(parameter) s: string">s</data-lsp></span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">): </span><span style="color: #267F99">string</span><span style="color: #000000"> {</span></div><div class="line"><span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #001080"><data-lsp lsp="(parameter) s: string">s</data-lsp></span><span style="color: #000000">.</span><span style="color: #795E26"><data-lsp lsp="(method) String.split(separator: string | RegExp, limit?: number | undefined): string[] (+1 overload)">split</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">""</span><span style="color: #000000">).</span><span style="color: #795E26"><data-lsp lsp="(method) Array&amp;lt;string>.reverse(): string[]">reverse</data-lsp></span><span style="color: #000000">().</span><span style="color: #795E26"><data-lsp lsp="(method) Array&amp;lt;string>.join(separator?: string | undefined): string">join</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">""</span><span style="color: #000000">);</span></div><div class="line"><span style="color: #000000">}</span></div>
+<div class="line"><span style="color: #795E26"><data-lsp lsp="function reverse(s: string): string">reverse</data-lsp></span><span style="color: #000000">(</span><span style="color: #A31515">"hello world"</span><span style="color: #000000">);</span></div></code><a class="playground-link" href="https://www.typescriptlang.org/play/#code/GYVwdgxgLglg9mABAJwKYDdXIM6oBTYBci2UyMYA5gJTGnlWIDeAUIiqlCMktgHTYADgBsYUPACIJ1Pmkw58MgFZwKk6QG4WAXxYs5WXJIAWqYcLiIA7nGTCAJpqA">Try</a></div></pre></div></div>
